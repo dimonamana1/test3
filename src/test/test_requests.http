@@ -1,0 +1,16 @@
+GET http://localhost:8080/exchange_codes
+
+###
+GET http://localhost:8080/rates
+
+###
+GET http://localhost:8080/rates?exchangeCodes=GBP,JPY,EUR
+
+###
+GET http://localhost:8080/historical_rates
+    ?date = 2014-12-24
+
+###
+GET http://localhost:8080/historical_rates
+    ?date = 2014-12-24
+    &exchangeCodes=GBP,JPY,EUR
