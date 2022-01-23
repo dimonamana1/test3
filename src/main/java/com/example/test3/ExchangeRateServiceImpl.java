@@ -14,9 +14,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public Flux<ExchangeRateEntity> saveAll(ApiService.Rates ratesToSave) {
-        Long timestamp = ratesToSave.timestamp();
-        return exchangeRateRepository.saveAll(ratesToSave
+    public Flux<ExchangeRateEntity> saveAll(ApiService.RatesResponse ratesResponseToSave) {
+        Long timestamp = ratesResponseToSave.timestamp();
+        return exchangeRateRepository.saveAll(ratesResponseToSave
                                                       .rates()
                                                       .entrySet()
                                                       .stream()

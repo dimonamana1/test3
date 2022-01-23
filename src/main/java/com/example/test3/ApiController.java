@@ -5,7 +5,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -27,16 +26,17 @@ public class ApiController {
     }
 
     @GetMapping(value = "rates")
-    public Flux<ExchangeRateEntity> getRates(@RequestParam(defaultValue = "") List<String> exchangeCodes) {
+    public Mono<ApiService.Rates> getRates(@RequestParam(defaultValue = "") List<String> exchangeCodes) {
         return apiService.getExchangeRates(exchangeCodes);
     }
 
     @GetMapping(value = "historical_rates")
-    public Flux<ExchangeRateEntity> getHistoricalRates(@RequestParam
-                                                                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                                                                          LocalDate date,
-                                                       @RequestParam(defaultValue = "")
-                                                                      List<String> exchangeCodes) {
+    public Mono<ApiService.Rates> getHistoricalRates(@RequestParam
+                                                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                                             LocalDate date,
+                                                     @RequestParam(defaultValue = "")
+                                                             List<String> exchangeCodes)
+    {
         return apiService.getHistoricalExchangeRates(date, exchangeCodes);
     }
 }

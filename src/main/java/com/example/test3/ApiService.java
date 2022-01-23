@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -41,7 +40,7 @@ public class ApiService {
                 .map(symbolsResponse -> new ExchangeCodes(symbolsResponse.symbols.keySet().stream().toList()));
     }
 
-    public Flux<ExchangeRateEntity> getExchangeRates(List<String> exchangeCodes) {
+    public Mono<Rates> getExchangeRates(List<String> exchangeCodes) {
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -54,11 +53,13 @@ public class ApiService {
                           error -> Mono.error(new RuntimeException("API not found")))
                 .onStatus(HttpStatus::is5xxServerError,
                           error -> Mono.error(new RuntimeException("Server is not responding")))
-                .bodyToMono(Rates.class)
-                .flatMapMany(exchangeRateService::saveAll);
+                .bodyToMono(RatesResponse.class)
+                .flatMapMany(exchangeRateService::saveAll)
+                .collectMap(ExchangeRateEntity::getExchangeCode, ExchangeRateEntity::getExchangeRate)
+                .map(Rates::new);
     }
 
-    public Flux<ExchangeRateEntity> getHistoricalExchangeRates(LocalDate date, List<String> exchangeCodes) {
+    public Mono<Rates> getHistoricalExchangeRates(LocalDate date, List<String> exchangeCodes) {
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -71,14 +72,19 @@ public class ApiService {
                           error -> Mono.error(new RuntimeException("API not found")))
                 .onStatus(HttpStatus::is5xxServerError,
                           error -> Mono.error(new RuntimeException("Server is not responding")))
-                .bodyToMono(Rates.class)
-                .flatMapMany(exchangeRateService::saveAll);
+                .bodyToMono(RatesResponse.class)
+                .flatMapMany(exchangeRateService::saveAll)
+                .collectMap(ExchangeRateEntity::getExchangeCode, ExchangeRateEntity::getExchangeRate)
+                .map(Rates::new);
     }
 
     private record SymbolsResponse(Map<String, String> symbols) {
     }
 
-    record Rates(Long timestamp, Map<String, Double> rates) {
+    record RatesResponse(Long timestamp, Map<String, Double> rates) {
+    }
+
+    record Rates(Map<String, Double> rates) {
     }
 
     record ExchangeCodes(List<String> codes) {
